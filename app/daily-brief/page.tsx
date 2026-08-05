@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useBrief } from "@/lib/BriefContext";
 import ThreadDetail from "@/components/ThreadDetail";
 import TimelineStrip from "@/components/TimelineStrip";
-import PriorityBadge from "@/components/PriorityBadge";
+import PriorityBadge, { FallbackBadge } from "@/components/PriorityBadge";
 import type { Bucket, OutputThread, ProcessInboxResponse } from "@/lib/types";
 
 const COLUMNS: { bucket: Bucket; label: string }[] = [
@@ -66,11 +66,7 @@ export default function DailyBriefPage() {
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-16">
       <header className="flex items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">Daily Brief</h1>
-        {data.mode === "fallback" && (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-            AI unavailable — rule-based triage
-          </span>
-        )}
+        <FallbackBadge isFallback={data.mode === "fallback"} size="sm" />
       </header>
 
       <TimelineStrip />
@@ -94,10 +90,11 @@ export default function DailyBriefPage() {
                     className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-4 text-left transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <PriorityBadge />
-                      <span className="text-xs text-zinc-500">
-                        {thread.priorityScore}/10
-                      </span>
+                      <PriorityBadge
+                        priority={thread.bucket}
+                        score={thread.priorityScore}
+                        size="sm"
+                      />
                     </div>
                     <p className="font-medium leading-snug">
                       {thread.subject}

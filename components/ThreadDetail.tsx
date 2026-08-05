@@ -24,7 +24,11 @@ export default function ThreadDetail({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
-            <PriorityBadge />
+            <PriorityBadge
+              priority={thread.bucket}
+              score={thread.priorityScore}
+              size="sm"
+            />
             <h2 className="text-xl font-semibold leading-tight">
               {thread.subject}
             </h2>
