@@ -24,7 +24,9 @@ from the thread — don't be generic.
 Return ONLY valid JSON: { "draft": "string" }`;
 
 export async function POST(request: NextRequest) {
-  const { allowed, retryAfterSeconds } = checkRateLimit(getClientKey(request));
+  const { allowed, retryAfterSeconds } = checkRateLimit(
+    `draft-reply:${getClientKey(request)}`
+  );
   if (!allowed) {
     return NextResponse.json(
       { error: "Too many draft requests. Please wait a moment and try again." },

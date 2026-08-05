@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import { callGeminiJSON } from "@/lib/gemini";
 import { processInbox } from "@/lib/fallbackEngine.js";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 import type {
   Email,
   Bucket,
@@ -206,7 +207,16 @@ export async function GET(request: NextRequest) {
 
   const emails = await loadInbox();
 
-  if (!forceFallback) {
+  // This endpoint fires 2 chained Gemini calls per hit, so it's rate-limited
+  // tighter than draft-reply. Unlike draft-reply, a rate-limited request here
+  // doesn't error out — it just skips straight to the rule-based engine,
+  // since this is the core "Process My Inbox" flow and it should never
+  // visibly break. Same graceful-degradation principle as an AI failure.
+  const { allowed } = checkRateLimit(`process-inbox:${getClientKey(request)}`, {
+    maxRequests: 3,
+  });
+
+  if (!forceFallback && allowed) {
     try {
       const result = await runAi(emails);
       return NextResponse.json(result);
@@ -216,6 +226,10 @@ export async function GET(request: NextRequest) {
         err instanceof Error ? err.message : err
       );
     }
+  } else if (!allowed) {
+    console.warn(
+      "[process-inbox] Rate limit hit, skipping AI and using rule-based engine"
+    );
   }
 
   const result = await runFallback(emails);
