@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { callGeminiJSON } from "@/lib/gemini";
-import {
-  clusterThreads,
-  scorePriority,
-  extractDeadlines,
-} from "@/lib/fallbackEngine.js";
+import { processInbox } from "@/lib/fallbackEngine.js";
 import type {
   Email,
   Bucket,
@@ -147,37 +143,34 @@ function buildOutput(
   return { threads: outputThreads, timeline, mode };
 }
 
+type FallbackThread = {
+  threadId: string;
+  subject: string;
+  emailIds: string[];
+  priorityScore: number;
+  bucket: string;
+  scoreBreakdown: ScoreBreakdown;
+  deadlines: ExtractedTask[];
+  summary: string;
+};
+
 async function runFallback(emails: Email[]): Promise<ProcessInboxResponse> {
-  const threads = (clusterThreads(emails) ?? []) as Array<{
-    threadId: string;
-    subject: string;
-    emailIds: string[];
-  }>;
+  const result = processInbox(emails) as { threads: FallbackThread[] };
+  const fallbackThreads = result?.threads ?? [];
 
-  const triageThreads: TriageThread[] = threads.map((thread) => {
-    const score = scorePriority(thread) ?? {
-      priorityScore: 0,
-      bucket: "fyi" as Bucket,
-      scoreBreakdown: {
-        senderImportance: 0,
-        deadlineProximity: 0,
-        actionRequired: 0,
-      },
-    };
-    return {
-      threadId: thread.threadId,
-      subject: thread.subject,
-      emailIds: thread.emailIds,
-      priorityScore: score.priorityScore,
-      bucket: score.bucket,
-      scoreBreakdown: score.scoreBreakdown,
-      summary: "",
-    };
-  });
-
-  const extractions: ThreadExtraction[] = threads.map((thread) => ({
+  const triageThreads: TriageThread[] = fallbackThreads.map((thread) => ({
     threadId: thread.threadId,
-    tasks: extractDeadlines(thread) ?? [],
+    subject: thread.subject,
+    emailIds: thread.emailIds,
+    priorityScore: thread.priorityScore,
+    bucket: isBucket(thread.bucket) ? thread.bucket : "fyi",
+    scoreBreakdown: thread.scoreBreakdown,
+    summary: thread.summary,
+  }));
+
+  const extractions: ThreadExtraction[] = fallbackThreads.map((thread) => ({
+    threadId: thread.threadId,
+    tasks: thread.deadlines ?? [],
   }));
 
   return buildOutput(triageThreads, extractions, "fallback");
