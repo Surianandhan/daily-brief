@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import PriorityBadge, { FallbackBadge } from "@/components/PriorityBadge";
 import ReasoningTrace from "@/components/ReasoningTrace";
 import DraftResponse from "@/components/DraftResponse";
-import { X, Clock, Mail, Sparkles, Zap, ChevronLeft } from "lucide-react";
 import type { OutputThread } from "@/lib/types";
 
 function formatDeadline(deadline: string | null): string {
@@ -13,11 +12,12 @@ function formatDeadline(deadline: string | null): string {
 }
 
 export interface ThreadDetailProps {
-  thread?: OutputThread | any;
+  thread?: OutputThread;
+  mode?: "ai" | "fallback";
   onClose?: () => void;
 }
 
-export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
+export default function ThreadDetail({ thread, mode, onClose }: ThreadDetailProps) {
   const [activeTab, setActiveTab] = useState<"detail" | "trace" | "reply">("reply");
 
   if (!thread) {
@@ -28,13 +28,9 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
     );
   }
 
-  // Handle both OutputThread schema and rich sample schema
-  const subject = thread.subject || "Email Thread Detail";
-  const priority = thread.bucket || thread.priority || "medium";
-  const score = thread.priorityScore ?? thread.score;
-  const summaryText = thread.summary || thread.keyTakeaway || thread.fullBody || "No summary available.";
-  const tasks = thread.tasks || [];
-  const scoreBreakdown = thread.scoreBreakdown || { senderImportance: 3, deadlineProximity: 3, actionRequired: 2 };
+  const isFallback = mode === "fallback";
+  const tasks = thread.tasks;
+  const scoreBreakdown = thread.scoreBreakdown;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs">
@@ -47,11 +43,11 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <PriorityBadge priority={priority} score={score} size="sm" />
-              <FallbackBadge isFallback={thread.triageMode === "fallback"} size="sm" />
+              <PriorityBadge priority={thread.bucket} score={thread.priorityScore} size="sm" />
+              <FallbackBadge isFallback={isFallback} size="sm" />
             </div>
             <h2 className="text-xl font-bold leading-tight text-zinc-900 dark:text-zinc-100">
-              {subject}
+              {thread.subject}
             </h2>
           </div>
           {onClose && (
@@ -113,7 +109,7 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
                 Summary
               </h3>
               <p className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
-                {summaryText}
+                {thread.summary || "No summary available."}
               </p>
             </section>
 
@@ -123,7 +119,7 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
                   Extracted Tasks &amp; Deadlines
                 </h3>
                 <ul className="flex flex-col gap-2">
-                  {tasks.map((task: any, i: number) => (
+                  {tasks.map((task, i) => (
                     <li
                       key={i}
                       className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-800/40"
@@ -151,9 +147,7 @@ export default function ThreadDetail({ thread, onClose }: ThreadDetailProps) {
           </div>
         )}
 
-        {activeTab === "trace" && (
-          <ReasoningTrace isFallbackMode={thread.triageMode === "fallback"} />
-        )}
+        {activeTab === "trace" && <ReasoningTrace isFallbackMode={isFallback} />}
       </div>
     </div>
   );

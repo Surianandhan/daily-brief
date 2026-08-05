@@ -112,6 +112,7 @@ export default function DailyBriefPage() {
       {selectedThread && (
         <ThreadDetail
           thread={selectedThread}
+          mode={data.mode}
           onClose={() => setSelectedThread(null)}
         />
       )}

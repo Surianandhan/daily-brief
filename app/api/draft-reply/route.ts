@@ -41,7 +41,11 @@ export async function POST(request: NextRequest) {
       isDraftReplyResponse
     );
     return NextResponse.json(result);
-  } catch {
+  } catch (err) {
+    console.warn(
+      "[draft-reply] Gemini call failed:",
+      err instanceof Error ? err.message : err
+    );
     return NextResponse.json(
       { error: "Failed to generate draft reply" },
       { status: 502 }
