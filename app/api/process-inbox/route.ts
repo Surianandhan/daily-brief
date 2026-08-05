@@ -7,54 +7,22 @@ import {
   scorePriority,
   extractDeadlines,
 } from "@/lib/fallbackEngine.js";
+import type {
+  Email,
+  Bucket,
+  ScoreBreakdown,
+  TriageThread,
+  ExtractedTask,
+  OutputThread,
+  TimelineItem,
+  ProcessInboxResponse,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-type Email = {
-  id: string;
-  from: string;
-  subject: string;
-  timestamp: string;
-  body: string;
-};
-
-type Bucket = "urgent" | "this_week" | "fyi";
-
-type ScoreBreakdown = {
-  senderImportance: number;
-  deadlineProximity: number;
-  actionRequired: number;
-};
-
-type TriageThread = {
-  threadId: string;
-  subject: string;
-  emailIds: string[];
-  priorityScore: number;
-  bucket: Bucket;
-  scoreBreakdown: ScoreBreakdown;
-  summary: string;
-};
-
 type TriageResponse = { threads: TriageThread[] };
-
-type ExtractedTask = { description: string; deadline: string | null };
 type ThreadExtraction = { threadId: string; tasks: ExtractedTask[] };
 type ExtractionResponse = { extractions: ThreadExtraction[] };
-
-type OutputThread = TriageThread & { tasks: ExtractedTask[] };
-type TimelineItem = {
-  threadId: string;
-  subject: string;
-  description: string;
-  deadline: string | null;
-};
-
-type ProcessInboxResponse = {
-  threads: OutputThread[];
-  timeline: TimelineItem[];
-  mode: "ai" | "fallback";
-};
 
 const TRIAGE_PROMPT = `You are an email triage assistant. You will receive a JSON array of emails.
 
