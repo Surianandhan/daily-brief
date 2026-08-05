@@ -1,0 +1,23 @@
+[
+  {
+    "id": "email-1",
+    "from": "placeholder@example.com",
+    "subject": "Placeholder email 1",
+    "timestamp": "2026-08-05T09:00:00.000Z",
+    "body": "This is a placeholder email body. Person 1 will replace this file with 35-40 real messy emails."
+  },
+  {
+    "id": "email-2",
+    "from": "placeholder2@example.com",
+    "subject": "Placeholder email 2",
+    "timestamp": "2026-08-05T10:30:00.000Z",
+    "body": "This is a placeholder email body."
+  },
+  {
+    "id": "email-3",
+    "from": "placeholder3@example.com",
+    "subject": "Placeholder email 3",
+    "timestamp": "2026-08-05T11:15:00.000Z",
+    "body": "This is a placeholder email body."
+  }
+]

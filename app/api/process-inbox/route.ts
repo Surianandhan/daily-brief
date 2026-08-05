@@ -1,0 +1,247 @@
+import { NextRequest, NextResponse } from "next/server";
+import fs from "fs/promises";
+import path from "path";
+import { callGeminiJSON } from "@/lib/gemini";
+import {
+  clusterThreads,
+  scorePriority,
+  extractDeadlines,
+} from "@/lib/fallbackEngine.js";
+
+export const dynamic = "force-dynamic";
+
+type Email = {
+  id: string;
+  from: string;
+  subject: string;
+  timestamp: string;
+  body: string;
+};
+
+type Bucket = "urgent" | "this_week" | "fyi";
+
+type ScoreBreakdown = {
+  senderImportance: number;
+  deadlineProximity: number;
+  actionRequired: number;
+};
+
+type TriageThread = {
+  threadId: string;
+  subject: string;
+  emailIds: string[];
+  priorityScore: number;
+  bucket: Bucket;
+  scoreBreakdown: ScoreBreakdown;
+  summary: string;
+};
+
+type TriageResponse = { threads: TriageThread[] };
+
+type ExtractedTask = { description: string; deadline: string | null };
+type ThreadExtraction = { threadId: string; tasks: ExtractedTask[] };
+type ExtractionResponse = { extractions: ThreadExtraction[] };
+
+type OutputThread = TriageThread & { tasks: ExtractedTask[] };
+type TimelineItem = {
+  threadId: string;
+  subject: string;
+  description: string;
+  deadline: string | null;
+};
+
+type ProcessInboxResponse = {
+  threads: OutputThread[];
+  timeline: TimelineItem[];
+  mode: "ai" | "fallback";
+};
+
+const TRIAGE_PROMPT = `You are an email triage assistant. You will receive a JSON array of emails.
+
+1. Group emails into threads based on subject, participants, and content
+   (a thread may contain 1 or many emails).
+2. For each thread, score priority 1-10 using this rubric:
+   - Sender importance (0-4): known VIP/manager/client = 4, colleague = 2,
+     unknown/newsletter = 0
+   - Deadline proximity (0-4): due <24h = 4, due this week = 2, no
+     deadline = 0
+   - Action-required language (0-2): explicit ask/question = 2, FYI only = 0
+3. Bucket each thread: "urgent" (8-10), "this_week" (4-7), "fyi" (0-3).
+
+Return ONLY valid JSON, no other text:
+{
+  "threads": [
+    {
+      "threadId": "string", "subject": "string", "emailIds": ["string"],
+      "priorityScore": 0, "bucket": "urgent | this_week | fyi",
+      "scoreBreakdown": { "senderImportance": 0, "deadlineProximity": 0,
+      "actionRequired": 0 },
+      "summary": "1-2 sentence thread-level summary, not per-email"
+    }
+  ]
+}`;
+
+const EXTRACTION_PROMPT = `For each thread below, extract any deadlines or action items mentioned
+anywhere in the email bodies. If no deadline is stated explicitly, set
+deadline to null — do not invent one.
+
+Return ONLY valid JSON:
+{ "extractions": [
+    { "threadId": "string", "tasks": [{ "description": "string",
+      "deadline": "string|null" }] } ] }`;
+
+function isBucket(value: unknown): value is Bucket {
+  return value === "urgent" || value === "this_week" || value === "fyi";
+}
+
+function isScoreBreakdown(value: unknown): value is ScoreBreakdown {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.senderImportance === "number" &&
+    typeof v.deadlineProximity === "number" &&
+    typeof v.actionRequired === "number"
+  );
+}
+
+function isTriageResponse(value: unknown): value is TriageResponse {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  if (!Array.isArray(v.threads)) return false;
+  return v.threads.every((t) => {
+    if (typeof t !== "object" || t === null) return false;
+    const th = t as Record<string, unknown>;
+    return (
+      typeof th.threadId === "string" &&
+      typeof th.subject === "string" &&
+      Array.isArray(th.emailIds) &&
+      th.emailIds.every((id) => typeof id === "string") &&
+      typeof th.priorityScore === "number" &&
+      isBucket(th.bucket) &&
+      isScoreBreakdown(th.scoreBreakdown) &&
+      typeof th.summary === "string"
+    );
+  });
+}
+
+function isExtractionResponse(value: unknown): value is ExtractionResponse {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  if (!Array.isArray(v.extractions)) return false;
+  return v.extractions.every((e) => {
+    if (typeof e !== "object" || e === null) return false;
+    const ex = e as Record<string, unknown>;
+    return (
+      typeof ex.threadId === "string" &&
+      Array.isArray(ex.tasks) &&
+      ex.tasks.every((t) => {
+        if (typeof t !== "object" || t === null) return false;
+        const task = t as Record<string, unknown>;
+        return (
+          typeof task.description === "string" &&
+          (task.deadline === null || typeof task.deadline === "string")
+        );
+      })
+    );
+  });
+}
+
+async function loadInbox(): Promise<Email[]> {
+  const filePath = path.join(process.cwd(), "data", "mock-inbox.json");
+  const raw = await fs.readFile(filePath, "utf-8");
+  return JSON.parse(raw);
+}
+
+function buildOutput(
+  threads: TriageThread[],
+  extractions: ThreadExtraction[],
+  mode: "ai" | "fallback"
+): ProcessInboxResponse {
+  const tasksByThreadId = new Map<string, ExtractedTask[]>();
+  for (const extraction of extractions) {
+    tasksByThreadId.set(extraction.threadId, extraction.tasks);
+  }
+
+  const outputThreads: OutputThread[] = threads.map((thread) => ({
+    ...thread,
+    tasks: tasksByThreadId.get(thread.threadId) ?? [],
+  }));
+
+  const timeline: TimelineItem[] = outputThreads.flatMap((thread) =>
+    thread.tasks.map((task) => ({
+      threadId: thread.threadId,
+      subject: thread.subject,
+      description: task.description,
+      deadline: task.deadline,
+    }))
+  );
+
+  return { threads: outputThreads, timeline, mode };
+}
+
+async function runFallback(emails: Email[]): Promise<ProcessInboxResponse> {
+  const threads = (clusterThreads(emails) ?? []) as Array<{
+    threadId: string;
+    subject: string;
+    emailIds: string[];
+  }>;
+
+  const triageThreads: TriageThread[] = threads.map((thread) => {
+    const score = scorePriority(thread) ?? {
+      priorityScore: 0,
+      bucket: "fyi" as Bucket,
+      scoreBreakdown: {
+        senderImportance: 0,
+        deadlineProximity: 0,
+        actionRequired: 0,
+      },
+    };
+    return {
+      threadId: thread.threadId,
+      subject: thread.subject,
+      emailIds: thread.emailIds,
+      priorityScore: score.priorityScore,
+      bucket: score.bucket,
+      scoreBreakdown: score.scoreBreakdown,
+      summary: "",
+    };
+  });
+
+  const extractions: ThreadExtraction[] = threads.map((thread) => ({
+    threadId: thread.threadId,
+    tasks: extractDeadlines(thread) ?? [],
+  }));
+
+  return buildOutput(triageThreads, extractions, "fallback");
+}
+
+async function runAi(emails: Email[]): Promise<ProcessInboxResponse> {
+  const triagePrompt = `${TRIAGE_PROMPT}\n\nEmails:\n${JSON.stringify(emails)}`;
+  const extractionPrompt = `${EXTRACTION_PROMPT}\n\nEmails:\n${JSON.stringify(emails)}`;
+
+  const [triage, extraction] = await Promise.all([
+    callGeminiJSON<TriageResponse>(triagePrompt, isTriageResponse),
+    callGeminiJSON<ExtractionResponse>(extractionPrompt, isExtractionResponse),
+  ]);
+
+  return buildOutput(triage.threads, extraction.extractions, "ai");
+}
+
+export async function GET(request: NextRequest) {
+  const forceFallback =
+    request.nextUrl.searchParams.get("fallback") === "true";
+
+  const emails = await loadInbox();
+
+  if (!forceFallback) {
+    try {
+      const result = await runAi(emails);
+      return NextResponse.json(result);
+    } catch {
+      // fall through to fallback engine below
+    }
+  }
+
+  const result = await runFallback(emails);
+  return NextResponse.json(result);
+}
