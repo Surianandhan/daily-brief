@@ -6,6 +6,8 @@ An AI email triage app. It ingests a mock inbox, clusters emails into threads, s
 
 Built in a 2-hour hackathon. No auth, no real Gmail integration, no database — everything runs in-memory off a mocked inbox JSON file.
 
+For a detailed file-by-file walkthrough of the whole system (request lifecycle, every module's job, the resilience mechanics, known quirks), see **[HOW_IT_WORKS.md](./HOW_IT_WORKS.md)**.
+
 ## How it works
 
 1. **Landing page** (`/`) shows the raw, unsorted inbox and a **Process My Inbox** button.
