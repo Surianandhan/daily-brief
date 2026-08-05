@@ -1,5 +1,7 @@
 # Daily Brief
 
+**Live demo: [daily-brief-nine-ruddy.vercel.app](https://daily-brief-nine-ruddy.vercel.app)**
+
 An AI email triage app. It ingests a mock inbox, clusters emails into threads, scores each thread's priority against an explicit rubric, extracts deadlines/action items, and renders a triaged "Daily Brief" (Urgent / This Week / FYI) — with an AI-drafted reply available per thread.
 
 Built in a 2-hour hackathon. No auth, no real Gmail integration, no database — everything runs in-memory off a mocked inbox JSON file.
@@ -69,7 +71,9 @@ The original spec targeted `gemini-2.5-flash-lite`, but that model has since bee
 
 ## Deploying
 
-This is a standard Next.js app — deploy it on [Vercel](https://vercel.com/new) by importing this repo, or run `vercel` from the project root. Set `GEMINI_API_KEY` as an environment variable in your hosting provider's dashboard (never commit it — `.env` is gitignored).
+Deployed on Vercel at [daily-brief-nine-ruddy.vercel.app](https://daily-brief-nine-ruddy.vercel.app), auto-redeploying on every push to `main`. `GEMINI_API_KEY` is set as an environment variable in the Vercel project dashboard (never commit it — `.env` is gitignored).
+
+To redeploy elsewhere: import this repo at [vercel.com/new](https://vercel.com/new), or run `vercel` from the project root, and set `GEMINI_API_KEY` in the new project's environment variables.
 
 ## Constraints (by design)
 
