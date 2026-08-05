@@ -1,23 +1,282 @@
 [
   {
-    "id": "email-1",
-    "from": "placeholder@example.com",
-    "subject": "Placeholder email 1",
-    "timestamp": "2026-08-05T09:00:00.000Z",
-    "body": "This is a placeholder email body. Person 1 will replace this file with 35-40 real messy emails."
+    "id": "email-001",
+    "from": "sarah.chen@acmecorp.com",
+    "subject": "Re: Q3 Product Roadmap Review",
+    "timestamp": "2026-08-05T07:15:00Z",
+    "body": "Hi team, just a reminder that the Q3 roadmap deck needs to be finalized and sent to the board by EOD today. Marcus specifically asked for it this morning. Please make sure the feature prioritization slides are updated. Let me know if anyone needs help."
   },
   {
-    "id": "email-2",
-    "from": "placeholder2@example.com",
-    "subject": "Placeholder email 2",
-    "timestamp": "2026-08-05T10:30:00.000Z",
-    "body": "This is a placeholder email body."
+    "id": "email-002",
+    "from": "devteam@prodapt.io",
+    "subject": "Q3 Product Roadmap Review",
+    "timestamp": "2026-08-04T14:00:00Z",
+    "body": "Hi everyone, I've created a draft of the Q3 roadmap deck. Sharing it here for review. Please add your comments by end of week. Link: https://docs.internal/roadmap-q3-draft. Sections covered: API redesign, mobile app improvements, data dashboard."
   },
   {
-    "id": "email-3",
-    "from": "placeholder3@example.com",
-    "subject": "Placeholder email 3",
-    "timestamp": "2026-08-05T11:15:00.000Z",
-    "body": "This is a placeholder email body."
+    "id": "email-003",
+    "from": "marcus.klein@acmecorp.com",
+    "subject": "Fwd: Q3 Product Roadmap Review",
+    "timestamp": "2026-08-05T06:50:00Z",
+    "body": "Forwarding this to make sure the right people are looped in. This deck goes to the board at 5 PM today. Do NOT miss this deadline. I need a polished, reviewed version with all team inputs merged. Any questions, call me directly."
+  },
+  {
+    "id": "email-004",
+    "from": "priya.sharma@prodapt.io",
+    "subject": "Re: Q3 Product Roadmap Review",
+    "timestamp": "2026-08-04T16:30:00Z",
+    "body": "I've added comments to the deck on slides 7 and 12. The API section needs some rework - we're overpromising on delivery dates. Can you review my notes and confirm whether we should push the API milestone to Q4?"
+  },
+  {
+    "id": "email-005",
+    "from": "james.walker@prodapt.io",
+    "subject": "Production Outage - Payment Service Down",
+    "timestamp": "2026-08-05T08:03:00Z",
+    "body": "URGENT: The payment processing service went down at 08:00 UTC. Transactions are failing. Error logs show a database connection pool exhaustion. I need all backend engineers to join the incident call immediately. Zoom link: https://zoom.us/j/incident-001. Please confirm you're joining ASAP."
+  },
+  {
+    "id": "email-006",
+    "from": "ops-alerts@prodapt.io",
+    "subject": "Re: Production Outage - Payment Service Down",
+    "timestamp": "2026-08-05T08:17:00Z",
+    "body": "Automated alert: Datadog is reporting 94% error rate on /api/payments endpoint. P50 latency has spiked to 12s. DB connection pool at 100% saturation. Rollback to v2.4.1 is recommended. Awaiting approval from on-call engineer."
+  },
+  {
+    "id": "email-007",
+    "from": "james.walker@prodapt.io",
+    "subject": "Re: Production Outage - Payment Service Down",
+    "timestamp": "2026-08-05T08:45:00Z",
+    "body": "Update: Root cause identified. A bad migration in the v2.5.0 deploy added an unindexed FK column causing full table scans on every transaction. We're rolling back now. ETA 15 minutes. Please send a customer-facing status update to support@prodapt.io once service is restored."
+  },
+  {
+    "id": "email-008",
+    "from": "linda.torres@acmecorp.com",
+    "subject": "Invoice #4821 - Overdue Payment",
+    "timestamp": "2026-08-04T09:00:00Z",
+    "body": "Dear team, this is a follow-up regarding Invoice #4821 for $18,500 issued on July 1, 2026. Payment was due on August 1, 2026 and we have not yet received it. Please confirm receipt of this invoice and process payment by August 6, 2026 to avoid a late fee. Contact our accounts team at billing@acmecorp.com."
+  },
+  {
+    "id": "email-009",
+    "from": "finance@prodapt.io",
+    "subject": "Re: Invoice #4821 - Overdue Payment",
+    "timestamp": "2026-08-04T11:30:00Z",
+    "body": "Hi Linda, thanks for following up. I've escalated this internally. The payment was caught in an approval workflow. Our CFO is reviewing and should approve by EOD today. You should see the transfer by August 6. Apologies for the delay."
+  },
+  {
+    "id": "email-010",
+    "from": "linda.torres@acmecorp.com",
+    "subject": "Fwd: Invoice #4821 - Overdue Payment",
+    "timestamp": "2026-08-05T08:30:00Z",
+    "body": "Forwarding this to the project lead as well. Please ensure this is resolved. Our finance team will apply a 2% late fee if not received by August 6, 2026. We value our relationship with Prodapt and hope to resolve this quickly. Can you confirm the payment status today?"
+  },
+  {
+    "id": "email-011",
+    "from": "recruiting@prodapt.io",
+    "subject": "Summer Internship - Final Interview Schedule",
+    "timestamp": "2026-08-03T10:00:00Z",
+    "body": "Hi, we've shortlisted 3 candidates for the final round of summer internship interviews. Their names are: Aiko Yamamoto, Ben Osei, and Clara Voss. Interviews are scheduled for August 7, 2026. Please confirm your availability to sit on the panel. Reply by Friday so we can send calendar invites."
+  },
+  {
+    "id": "email-012",
+    "from": "you@prodapt.io",
+    "subject": "Re: Summer Internship - Final Interview Schedule",
+    "timestamp": "2026-08-03T13:15:00Z",
+    "body": "Hi, I'm available for August 7. Happy to interview Aiko and Ben. Could you send me their resumes and the interview rubric beforehand? Also, what time are the sessions scheduled?"
+  },
+  {
+    "id": "email-013",
+    "from": "recruiting@prodapt.io",
+    "subject": "Re: Summer Internship - Final Interview Schedule",
+    "timestamp": "2026-08-04T09:45:00Z",
+    "body": "Great, thank you! Sessions are at 10 AM, 11 AM, and 1 PM on August 7. Resumes attached. Rubric will be sent by tomorrow. Please review the candidate profiles before the interview. Let us know if you have any conflicts."
+  },
+  {
+    "id": "email-014",
+    "from": "devteam@prodapt.io",
+    "subject": "Deployment Approval Needed - v2.5.1 Hotfix",
+    "timestamp": "2026-08-05T09:00:00Z",
+    "body": "We've prepared a hotfix (v2.5.1) for the payment service issue. The patch fixes the unindexed migration and adds a connection pool config increase. Can you approve the deployment to production? We need sign-off ASAP to restore service. Checklist attached. Please review and reply with approval or concerns."
+  },
+  {
+    "id": "email-015",
+    "from": "qa-team@prodapt.io",
+    "subject": "Re: Deployment Approval Needed - v2.5.1 Hotfix",
+    "timestamp": "2026-08-05T09:20:00Z",
+    "body": "QA has signed off on v2.5.1. Regression tests passed. Smoke tests passed on staging. No new failures introduced. We're good to go. Awaiting final production deployment approval from the engineering lead."
+  },
+  {
+    "id": "email-016",
+    "from": "devteam@prodapt.io",
+    "subject": "Fwd: Deployment Approval Needed - v2.5.1 Hotfix",
+    "timestamp": "2026-08-05T09:35:00Z",
+    "body": "Forwarding to make sure everyone is aware. This hotfix is critical. We are bleeding revenue every minute the payment service is down. Please approve this deployment immediately. The rollback is in place and can be executed in under 2 minutes if anything goes wrong."
+  },
+  {
+    "id": "email-017",
+    "from": "noreply@techdigest.io",
+    "subject": "Tech Digest Weekly: Top AI Tools, Rust 2.0, and the Future of DevOps",
+    "timestamp": "2026-08-04T06:00:00Z",
+    "body": "Good morning! This week in Tech Digest: (1) 10 AI tools transforming software development, (2) Rust 2.0 release - what's new, (3) Is GitOps the future of DevOps? (4) Startup spotlight: Vercel's new edge runtime. Click to read more. Unsubscribe | Manage preferences."
+  },
+  {
+    "id": "email-018",
+    "from": "noreply@producthunt.com",
+    "subject": "🚀 Today's Top Products on Product Hunt",
+    "timestamp": "2026-08-05T05:00:00Z",
+    "body": "Here are today's top products: 1. Luminary AI - AI-powered design assistant, 2. FlowBoard - Async video for teams, 3. DataPulse - Real-time analytics for startups. Check them out and upvote your favorites! Happy building. The Product Hunt Team."
+  },
+  {
+    "id": "email-019",
+    "from": "offers@cloudprovider.com",
+    "subject": "Limited Time: 30% off annual cloud plans - expires soon",
+    "timestamp": "2026-08-03T08:00:00Z",
+    "body": "Hi there! For a limited time, get 30% off our annual Pro and Enterprise cloud plans. This deal expires August 10, 2026. Use code CLOUD30 at checkout. Upgrade now and save thousands on compute, storage, and networking. Unsubscribe from promotional emails."
+  },
+  {
+    "id": "email-020",
+    "from": "marcus.klein@acmecorp.com",
+    "subject": "All-Hands Meeting - Thursday 2 PM",
+    "timestamp": "2026-08-03T11:00:00Z",
+    "body": "Team, we're holding an all-hands on Thursday, August 7 at 2 PM. Agenda: (1) Q3 goals recap, (2) Org structure update, (3) New client announcement, (4) Q&A. Attendance is mandatory. Please block your calendar and RSVP to confirm. Zoom link will be sent tomorrow."
+  },
+  {
+    "id": "email-021",
+    "from": "sarah.chen@acmecorp.com",
+    "subject": "Re: All-Hands Meeting - Thursday 2 PM",
+    "timestamp": "2026-08-03T13:00:00Z",
+    "body": "Thanks Marcus, confirmed. I'll prepare a brief update on the client project status for the meeting. Should I also include the roadmap summary, or will that be a separate agenda item?"
+  },
+  {
+    "id": "email-022",
+    "from": "devteam@prodapt.io",
+    "subject": "Re: All-Hands Meeting - Thursday 2 PM",
+    "timestamp": "2026-08-04T08:00:00Z",
+    "body": "Confirmed from the dev team. We'll have a quick update on the infrastructure migration. Should take 5-7 minutes. Let us know if you need slides submitted in advance."
+  },
+  {
+    "id": "email-023",
+    "from": "priya.sharma@prodapt.io",
+    "subject": "Code Review Request - Auth Module Refactor",
+    "timestamp": "2026-08-04T15:00:00Z",
+    "body": "Hi, I've finished refactoring the auth module to use short-lived JWTs with refresh token rotation. PR is open here: https://github.com/prodapt/auth-refactor/pull/42. Can you review it by end of week? It's blocking our security audit scheduled for August 10."
+  },
+  {
+    "id": "email-024",
+    "from": "you@prodapt.io",
+    "subject": "Re: Code Review Request - Auth Module Refactor",
+    "timestamp": "2026-08-04T17:00:00Z",
+    "body": "On it. I'll review it tomorrow morning. Quick question: did you update the token expiry config in the .env.example file? Also, are there unit tests for the refresh rotation logic?"
+  },
+  {
+    "id": "email-025",
+    "from": "priya.sharma@prodapt.io",
+    "subject": "Re: Code Review Request - Auth Module Refactor",
+    "timestamp": "2026-08-05T07:00:00Z",
+    "body": "Yes, .env.example is updated. Unit tests are in /tests/auth/refresh.test.js - coverage is at 87%. Please complete the review today if possible since the security audit prep starts on August 6."
+  },
+  {
+    "id": "email-026",
+    "from": "hr@prodapt.io",
+    "subject": "FYI: Updated Work From Home Policy",
+    "timestamp": "2026-08-01T10:00:00Z",
+    "body": "Hi all, please be advised that the updated Work From Home policy takes effect on September 1, 2026. Key changes: (1) WFH days reduced from 4 to 3 per week, (2) Core hours are now 10 AM - 3 PM local time, (3) All WFH requests over 5 consecutive days require manager approval. Please review and acknowledge receipt by replying to this email."
+  },
+  {
+    "id": "email-027",
+    "from": "hr@prodapt.io",
+    "subject": "Company Newsletter - August 2026",
+    "timestamp": "2026-08-01T08:00:00Z",
+    "body": "Welcome to the August 2026 Prodapt Newsletter! Highlights: (1) We hit 200 customers milestone! (2) Team spotlight: Congrats to Ben Osei for the Hackathon win! (3) Upcoming events: Summer picnic on August 15. (4) New joiners: Welcome Mei Lin and Rashid Kamal to the engineering team. Have a great month everyone!"
+  },
+  {
+    "id": "email-028",
+    "from": "sarah.chen@acmecorp.com",
+    "subject": "Client Feedback - Dashboard Prototype",
+    "timestamp": "2026-08-04T10:00:00Z",
+    "body": "Hi, sharing feedback from Acme's VP on the dashboard prototype shown last week. Overall they liked the layout but have two concerns: (1) The data refresh rate is too slow - they want near real-time. (2) The export to CSV feature is missing. Can you send me an updated timeline for these two features? They want a response by Friday."
+  },
+  {
+    "id": "email-029",
+    "from": "devteam@prodapt.io",
+    "subject": "Re: Client Feedback - Dashboard Prototype",
+    "timestamp": "2026-08-04T14:30:00Z",
+    "body": "Received. Real-time refresh is achievable with WebSockets - roughly 2 days of work. CSV export is straightforward, 1 day. We can have both ready by August 8 if we start today. Should I open the tickets now or do you want to align with the client first?"
+  },
+  {
+    "id": "email-030",
+    "from": "sarah.chen@acmecorp.com",
+    "subject": "Re: Client Feedback - Dashboard Prototype",
+    "timestamp": "2026-08-05T07:30:00Z",
+    "body": "Yes, please open the tickets and start today. The client has a follow-up review on August 9. We need those features demo-ready by then. Please confirm you've started and send me a brief update by EOD today."
+  },
+  {
+    "id": "email-031",
+    "from": "james.walker@prodapt.io",
+    "subject": "Standup Notes - August 4",
+    "timestamp": "2026-08-04T09:30:00Z",
+    "body": "Sharing yesterday's standup notes for anyone who missed it. Blockers: (1) Auth refactor PR waiting on review, (2) Dashboard prototype feedback pending from client. Completed: Deployment pipeline updated, staging environment upgraded to Node 22. In progress: Payment service migration, Q3 roadmap deck. No action needed, FYI only."
+  },
+  {
+    "id": "email-032",
+    "from": "james.walker@prodapt.io",
+    "subject": "Standup Notes - August 5",
+    "timestamp": "2026-08-05T09:05:00Z",
+    "body": "Today's standup summary. Critical: Payment service incident ongoing, hotfix v2.5.1 pending approval. Blockers: All hands on incident. In progress: Roadmap deck (due EOD), invoice resolution. Note: Auth PR review was supposed to start today - check if it got picked up. FYI: All-hands Thursday 2 PM."
+  },
+  {
+    "id": "email-033",
+    "from": "marcus.klein@acmecorp.com",
+    "subject": "Performance Review Reminder",
+    "timestamp": "2026-08-02T09:00:00Z",
+    "body": "Hi all, just a reminder that Q2 performance self-reviews are due by August 8, 2026. Please complete your self-assessment in the HR portal. Managers will schedule 1:1 review meetings the following week. If you have any questions about the process, contact hr@prodapt.io."
+  },
+  {
+    "id": "email-034",
+    "from": "noreply@linkedin.com",
+    "subject": "You have 7 new connection requests and 3 messages",
+    "timestamp": "2026-08-04T07:00:00Z",
+    "body": "Hi there! You have 7 new connection requests waiting. Also, 3 people sent you messages this week. Don't let opportunities pass by! Log in to review your notifications. People are also viewing your profile - see who's been looking. Manage email preferences | Unsubscribe."
+  },
+  {
+    "id": "email-035",
+    "from": "linda.torres@acmecorp.com",
+    "subject": "New Project Kickoff - Acme Analytics Platform",
+    "timestamp": "2026-08-03T14:00:00Z",
+    "body": "Dear Prodapt team, we're excited to kick off the Acme Analytics Platform project. Please review the attached SOW and confirm your team's availability for a kickoff call on August 7 at 11 AM EST. We'd like to finalize the project charter and assign roles on that call. Please send back a signed copy of the SOW by August 6, 2026."
+  },
+  {
+    "id": "email-036",
+    "from": "you@prodapt.io",
+    "subject": "Re: New Project Kickoff - Acme Analytics Platform",
+    "timestamp": "2026-08-04T10:00:00Z",
+    "body": "Hi Linda, thank you! We're excited to start. I've reviewed the SOW and have a few minor comments on Section 4 (deliverables). Can we schedule a 15-minute call before the kickoff to align? I'll also need to loop in our legal team for the contract sign-off. Should have everything back to you before August 6."
+  },
+  {
+    "id": "email-037",
+    "from": "linda.torres@acmecorp.com",
+    "subject": "Re: New Project Kickoff - Acme Analytics Platform",
+    "timestamp": "2026-08-05T06:00:00Z",
+    "body": "Absolutely, happy to do a 15-minute pre-call. How does August 5 at 3 PM work? Also, please make sure the signed SOW is back by August 6 - our legal team has a hard deadline and cannot extend it. Looking forward to working together."
+  },
+  {
+    "id": "email-038",
+    "from": "devteam@prodapt.io",
+    "subject": "FYI: Node.js Upgraded to v22 on Staging",
+    "timestamp": "2026-08-04T13:00:00Z",
+    "body": "Just a heads up - staging has been upgraded to Node.js v22. All tests passing. No breaking changes detected. If you notice any issues with your local dev environment, make sure to run 'nvm use 22' and reinstall node_modules. No action required unless you hit issues."
+  },
+  {
+    "id": "email-039",
+    "from": "priya.sharma@prodapt.io",
+    "subject": "Re: FYI: Node.js Upgraded to v22 on Staging",
+    "timestamp": "2026-08-04T14:00:00Z",
+    "body": "Thanks for the heads up! I noticed the auth module tests ran slightly faster. No issues on my end. One thing to watch: the crypto module API changed slightly in v22 - make sure the token signing logic still works as expected. I'll double-check in my PR."
+  },
+  {
+    "id": "email-040",
+    "from": "hr@prodapt.io",
+    "subject": "Team Lunch - Friday August 8",
+    "timestamp": "2026-08-03T09:00:00Z",
+    "body": "Hey team! We're doing a team lunch this Friday, August 8, at noon. We'll be going to The Green Fork (vegetarian-friendly). Please RSVP by Thursday so we can book the right table size. If you have dietary restrictions, let us know. Looking forward to seeing everyone there!"
   }
 ]
