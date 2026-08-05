@@ -16,6 +16,11 @@ import type {
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+// Worst case is 2 sequential Gemini calls x 2 attempts x 5s timeout = up to
+// 20s. Without this, Vercel's default serverless function timeout (10s on
+// Hobby) can kill the function before our own try/catch ever gets to fall
+// back, turning a graceful degradation into a raw 504 to the browser.
+export const maxDuration = 30;
 
 type TriageResponse = { threads: TriageThread[] };
 type ThreadExtraction = { threadId: string; tasks: ExtractedTask[] };

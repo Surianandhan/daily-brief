@@ -3,6 +3,9 @@ import { callGeminiJSON } from "@/lib/gemini";
 import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
+// Worst case is 1 Gemini call x 2 attempts x 5s timeout = up to 10s, right at
+// Vercel's default Hobby-plan function timeout — extend it for headroom.
+export const maxDuration = 15;
 
 type DraftReplyRequest = {
   subject: string;
