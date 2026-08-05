@@ -4,6 +4,23 @@ A file-by-file walkthrough of the whole system, for anyone on the team (or judgi
 
 **Live:** https://daily-brief-nine-ruddy.vercel.app
 
+This doc is written so that **any one of the five of you can read it top to bottom and explain the whole app to a panel** — not just the piece you personally built. Nobody should have to say "that's not my part, ask someone else." Read all of it, not just your section.
+
+---
+
+## 0. The panel narrative — read this part out loud to yourself once
+
+If a judge stops you cold and says "explain your project," this is the answer, in order:
+
+1. **The problem:** a real inbox is chaos — urgent client escalations sit next to newsletters, deadlines are buried in paragraph three of email four in a six-email thread, and nobody has time to read all of it in order.
+2. **What we built:** an app that takes a messy inbox, has an AI cluster it into actual conversation threads, score each thread's urgency against an explicit rubric, pull out every deadline and action item, and hand you a triaged board — Urgent / This Week / FYI — plus a drafted reply for any thread, one click away.
+3. **The demo, in order:** landing page (raw chaotic inbox, nothing sorted yet) → click "Process My Inbox" → Daily Brief board renders with real AI-generated priority scores and summaries → click any thread → see the summary, the extracted tasks with real deadlines, the score breakdown (why did the AI call this urgent, exactly), and an AI-drafted reply you can regenerate in different tones.
+4. **The technical differentiator — this is the part that makes it more than a ChatGPT wrapper:** every AI call runs under a 5-second timeout with one retry. If Gemini fails, times out, or returns malformed data — for any reason, including just being a free-tier API having a bad moment — the app doesn't show an error or a spinner forever. It silently swaps in a **hand-written JavaScript rule engine** that does the same clustering, same scoring rubric, same deadline extraction, with regex and keyword logic instead of a model. Same output shape either way. The UI shows a small badge telling you which one ran, but nothing else about the app changes. You can prove this live, on demand, by adding `?fallback=true` to the API URL — no need to hope the API breaks on its own in front of the judges.
+5. **If asked "why no login / no real Gmail":** deliberate scope decision for a 2-hour build. Auth and OAuth would have eaten 30+ minutes and could break live on unfamiliar wifi mid-demo. None of that is what's being judged — the AI reasoning quality and the resilience story are. Everything runs off a realistic mocked inbox instead.
+6. **If asked "what would you build next":** real Gmail OAuth read access, persistent storage so triage state survives a refresh, and a UI toggle for forcing the fallback engine instead of a URL param.
+
+That's the whole pitch. Everything below is the detail behind it, for when someone asks a follow-up you don't already know the answer to.
+
 ---
 
 ## 1. The one-sentence version
