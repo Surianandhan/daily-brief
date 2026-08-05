@@ -49,11 +49,21 @@ export function DraftResponse({ thread, onSendReply }: DraftResponseProps) {
           tone,
         }),
       });
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 429) {
+          const data: { error?: string } = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Too many requests. Please wait a moment.");
+        }
+        throw new Error(`Request failed with status ${res.status}`);
+      }
       const data: { draft: string } = await res.json();
       setDraftText(data.draft);
-    } catch {
-      setError("Couldn't generate a draft reply. Try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message.toLowerCase().includes("too many")
+          ? err.message
+          : "Couldn't generate a draft reply. Try again."
+      );
     } finally {
       setIsGenerating(false);
     }

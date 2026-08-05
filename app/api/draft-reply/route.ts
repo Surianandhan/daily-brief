@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callGeminiJSON } from "@/lib/gemini";
+import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,19 @@ from the thread — don't be generic.
 Return ONLY valid JSON: { "draft": "string" }`;
 
 export async function POST(request: NextRequest) {
+  const { allowed, retryAfterSeconds } = checkRateLimit(getClientKey(request));
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many draft requests. Please wait a moment and try again." },
+      {
+        status: 429,
+        headers: retryAfterSeconds
+          ? { "Retry-After": String(retryAfterSeconds) }
+          : undefined,
+      }
+    );
+  }
+
   const body = (await request.json()) as DraftReplyRequest;
   const tone = body.tone || "professional-friendly";
 
