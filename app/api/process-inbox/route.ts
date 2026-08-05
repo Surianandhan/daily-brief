@@ -178,12 +178,24 @@ async function runFallback(emails: Email[]): Promise<ProcessInboxResponse> {
 
 async function runAi(emails: Email[]): Promise<ProcessInboxResponse> {
   const triagePrompt = `${TRIAGE_PROMPT}\n\nEmails:\n${JSON.stringify(emails)}`;
-  const extractionPrompt = `${EXTRACTION_PROMPT}\n\nEmails:\n${JSON.stringify(emails)}`;
+  const triage = await callGeminiJSON<TriageResponse>(triagePrompt, isTriageResponse);
 
-  const [triage, extraction] = await Promise.all([
-    callGeminiJSON<TriageResponse>(triagePrompt, isTriageResponse),
-    callGeminiJSON<ExtractionResponse>(extractionPrompt, isExtractionResponse),
-  ]);
+  // Extraction must reuse triage's own threadIds, so it's fed triage's actual
+  // thread groupings (not sent independently) — otherwise the two calls invent
+  // unrelated threadId values and tasks can never be matched back to a thread.
+  const emailsById = new Map(emails.map((e) => [e.id, e]));
+  const threadsWithEmails = triage.threads.map((thread) => ({
+    threadId: thread.threadId,
+    subject: thread.subject,
+    emails: thread.emailIds
+      .map((id) => emailsById.get(id))
+      .filter((e): e is Email => e !== undefined),
+  }));
+  const extractionPrompt = `${EXTRACTION_PROMPT}\n\nThreads:\n${JSON.stringify(threadsWithEmails)}`;
+  const extraction = await callGeminiJSON<ExtractionResponse>(
+    extractionPrompt,
+    isExtractionResponse
+  );
 
   return buildOutput(triage.threads, extraction.extractions, "ai");
 }
@@ -198,8 +210,11 @@ export async function GET(request: NextRequest) {
     try {
       const result = await runAi(emails);
       return NextResponse.json(result);
-    } catch {
-      // fall through to fallback engine below
+    } catch (err) {
+      console.warn(
+        "[process-inbox] Gemini call failed, falling back to rule-based engine:",
+        err instanceof Error ? err.message : err
+      );
     }
   }
 

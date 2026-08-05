@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODEL_NAME = "gemini-2.5-flash-lite";
+const MODEL_NAME = "gemini-3.1-flash-lite";
 const CALL_TIMEOUT_MS = 5000;
 
 let client: GoogleGenerativeAI | null = null;
@@ -43,15 +43,23 @@ export async function callGeminiJSON<T>(
   prompt: string,
   validate: (value: unknown) => value is T
 ): Promise<T> {
+  let lastError: unknown;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const parsed = await callOnce(prompt);
       if (validate(parsed)) {
         return parsed;
       }
-    } catch {
-      // fall through to retry / rethrow below
+      lastError = new Error("Response did not match expected schema");
+    } catch (err) {
+      lastError = err;
     }
+    console.warn(
+      `[gemini] attempt ${attempt + 1}/2 failed:`,
+      lastError instanceof Error ? lastError.message : lastError
+    );
   }
-  throw new Error("Gemini call failed validation or errored after retry");
+  throw new Error("Gemini call failed validation or errored after retry", {
+    cause: lastError,
+  });
 }

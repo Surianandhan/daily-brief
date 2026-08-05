@@ -3,10 +3,15 @@
 import React from "react";
 import { Clock, AlertCircle, Calendar, CheckCircle2, Filter } from "lucide-react";
 
+export interface TimelineStripThread {
+  deadlineHorizon?: "overdue" | "today" | "this_week" | "flexible";
+  priority?: string;
+}
+
 export interface TimelineStripProps {
   activeFilter?: string;
   onSelectFilter?: (filterId: string) => void;
-  threads?: any[];
+  threads?: TimelineStripThread[];
 }
 
 export function TimelineStrip({
@@ -74,7 +79,7 @@ export function TimelineStrip({
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <div className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-indigo-600">
-            // Temporal Horizon Analysis
+            {"// Temporal Horizon Analysis"}
           </div>
           <h3 className="text-lg font-black text-slate-900 tracking-tight">Deadline Timeline Strip</h3>
         </div>

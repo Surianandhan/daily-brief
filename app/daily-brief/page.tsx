@@ -17,7 +17,7 @@ const COLUMNS: { bucket: Bucket; label: string }[] = [
 export default function DailyBriefPage() {
   const router = useRouter();
   const { data, setData } = useBrief();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => !data);
   const [error, setError] = useState<string | null>(null);
   const [selectedThread, setSelectedThread] = useState<OutputThread | null>(
     null
@@ -25,7 +25,6 @@ export default function DailyBriefPage() {
 
   useEffect(() => {
     if (data) return;
-    setLoading(true);
     fetch("/api/process-inbox")
       .then((res) => {
         if (!res.ok) throw new Error(`Request failed with status ${res.status}`);

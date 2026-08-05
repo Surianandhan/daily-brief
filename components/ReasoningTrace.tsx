@@ -140,7 +140,7 @@ export function ReasoningTrace({
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isRunning) {
       const startTime = Date.now() - elapsedMs;
       interval = setInterval(() => {
@@ -157,6 +157,7 @@ export function ReasoningTrace({
 
     const currentStep = steps[currentStepIndex];
     if (!currentStep) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- defensive guard for an empty `steps` array; unreachable with the default step lists
       setIsRunning(false);
       setIsCompleted(true);
       if (onTraceComplete) onTraceComplete();
@@ -210,7 +211,7 @@ export function ReasoningTrace({
       <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-100">
         <div className="space-y-1">
           <div className="text-[10px] font-mono font-bold uppercase tracking-[0.25em] text-indigo-600">
-            // Real-Time Execution Trace Engine
+            {"// Real-Time Execution Trace Engine"}
           </div>
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">Live Execution Trace</h2>
