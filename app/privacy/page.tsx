@@ -40,9 +40,10 @@ export default function PrivacyPage() {
       <ul>
         <li>
           Email content is sent to Google&apos;s <strong>Gemini API</strong>{" "}
-          to group, prioritise and summarise your emails, extract deadlines,
-          and draft replies. If Gemini is unavailable, a rule-based engine
-          on our server does the same job without AI.
+          (free tier; see Sharing below) to prioritise and summarise your
+          emails, extract deadlines, and draft replies. If Gemini is
+          unavailable, a rule-based engine on our server does the same job
+          without AI.
         </li>
         <li>
           The finished brief is sent back to your browser and kept only in
@@ -68,26 +69,31 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
-      <h2>Sharing</h2>
+      <h2>Sharing, and what Google may do with your email text</h2>
       <p>
-        We don&apos;t sell your data, show you ads, or share your data with
-        anyone, except sending email content to the Gemini API (operated by
-        Google) to produce your brief. Daily Brief uses the paid Gemini API,
-        under which Google does not use the content to improve its products.
-        We never use your data, and never allow it to be used, to train AI or
-        machine-learning models. No human reads your email unless you ask us
-        to for support, or the law requires it.
+        We don&apos;t sell your data, show you ads, or share it with anyone,
+        except Google&apos;s Gemini API, which processes email content to
+        produce your brief and draft replies.
       </p>
       <p>
-        Daily Brief&apos;s use and transfer to any other app of information
-        received from Google APIs will adhere to the{" "}
-        <a
-          href="https://developers.google.com/terms/api-services-user-data-policy"
-          className="underline"
-        >
-          Google API Services User Data Policy
+        <strong>Important:</strong> Daily Brief is a free project and uses the{" "}
+        <strong>free tier</strong> of the Gemini API. Under{" "}
+        <a href="https://ai.google.dev/gemini-api/terms" className="underline">
+          Google&apos;s Gemini API terms
         </a>
-        , including the Limited Use requirements.
+        , Google uses content sent to its free tier to provide, improve and
+        develop its products and machine-learning technologies, and human
+        reviewers at Google may read it. If you don&apos;t want Google to
+        process your emails this way, please don&apos;t use Daily Brief.
+      </p>
+      <p>
+        We (the developer) don&apos;t read your email, don&apos;t keep it,
+        and don&apos;t use it to train any models ourselves.
+      </p>
+      <p>
+        Daily Brief hasn&apos;t been through Google&apos;s paid verification
+        and security review, which is why Google shows an &ldquo;unverified
+        app&rdquo; warning when you sign in.
       </p>
 
       <h2>Your choices</h2>

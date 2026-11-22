@@ -28,9 +28,19 @@ export default function SignIn({ error }: { error?: string }) {
         <li>• <strong>Read-only:</strong> it can&apos;t send, delete or change any email.</li>
         <li>• Only reads inbox emails from the last 7 days (skips Promotions and Social).</li>
         <li>• Nothing is stored on our servers. Your brief lives in your browser tab.</li>
-        <li>• Email text is sent to Google&apos;s Gemini AI to write the brief.</li>
         <li>• Signing out removes the app&apos;s access to your Gmail.</li>
       </ul>
+
+      <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+        <strong>Please read:</strong> to write your brief, the text of your
+        recent emails is sent to Google&apos;s Gemini AI on its <strong>free
+        tier</strong>. On the free tier, Google may use that text to improve
+        its products and AI, and people at Google may read it. Don&apos;t sign
+        in with an inbox containing anything you wouldn&apos;t want Google to
+        see. Google will also show an &ldquo;unverified app&rdquo; warning,
+        because this free project hasn&apos;t been through Google&apos;s paid
+        review.
+      </p>
 
       <div className="flex flex-col items-start gap-3">
         <a

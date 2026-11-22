@@ -29,8 +29,8 @@ An AI email triage app for Gmail. Sign in with Google and it reads your recent i
 
 - Read-only Gmail scope (`gmail.readonly`). It can't send, delete or modify mail.
 - No database and no stored email. The brief lives only in your browser tab.
-- Email content is sent to the Gemini API to produce the brief. **Use a paid-tier Gemini key in production**: on the free tier Google may use prompts to improve its products, which isn't acceptable for other people's email and conflicts with Google's Limited Use rules.
 - Signing out deletes the cookie and revokes the token at Google.
+- **The app is run at zero cost, so it uses the free tier of the Gemini API.** On the free tier, Google may use submitted content to improve its products, and human reviewers may read it ([Gemini API terms](https://ai.google.dev/gemini-api/terms)). Google's terms also say not to send personal information to the free tier. Users are told this clearly before they sign in, and in the Privacy Policy. Switching to a paid Gemini key (a Cloud Billing account on the key's project) removes this, and then the Privacy Policy should be updated to match.
 - Full policy: `/privacy` ([app/privacy/page.tsx](./app/privacy/page.tsx)). Terms: `/terms`.
 
 ## Tech stack
@@ -74,13 +74,13 @@ In [Google Cloud Console](https://console.cloud.google.com):
 
 1. Create a project (e.g. "Daily Brief").
 2. **APIs & Services → Library**: enable the **Gmail API**.
-3. **Google Auth Platform → Branding** (the OAuth consent screen): app name "Daily Brief", your support email, and your app's home page, privacy policy (`/privacy`) and terms (`/terms`) URLs.
-4. **Audience**: user type **External**. While it's in **Testing**, add your own Gmail (and anyone else trying it) as **test users**.
-5. **Data Access**: add the scope `https://www.googleapis.com/auth/gmail.readonly` (plus `openid` and `email`).
-6. **Clients → Create client → Web application**. Under **Authorized redirect URIs** add:
-   - `https://YOUR-DOMAIN/api/auth/callback` (e.g. `https://daily-brief-nine-ruddy.vercel.app/api/auth/callback`)
+3. **Google Auth Platform → Get started** (the OAuth consent screen): app name `Daily Brief`, your email as the support and contact email, audience **External**. **Don't upload a logo**: a logo forces Google's verification review.
+4. **Data Access → Add or remove scopes**: paste `https://www.googleapis.com/auth/gmail.readonly` into "Manually add scopes", and tick `.../auth/userinfo.email` and `openid`. Save.
+5. **Clients → Create client → Web application**, name `Daily Brief`. Under **Authorized redirect URIs** add:
+   - `https://daily-brief-nine-ruddy.vercel.app/api/auth/callback`
    - `http://localhost:3000/api/auth/callback` (for local development)
-7. Copy the **Client ID** and **Client secret**.
+6. Copy the **Client ID** and **Client secret** (the secret is only shown once).
+7. **Audience → Publish app** (status "In production"). This makes sign-in public. Google shows an "unverified app" warning, and users click **Advanced → Go to Daily Brief** to continue. (Leaving it in "Testing" instead limits sign-in to test users you list.)
 
 ### 2. Environment variables
 
@@ -88,11 +88,11 @@ Copy `.env.example` to `.env` for local use, and set the same values in Vercel (
 
 | Variable | Required | Notes |
 |---|---|---|
-| `GOOGLE_CLIENT_ID` | Yes | From step 1.7 |
-| `GOOGLE_CLIENT_SECRET` | Yes | From step 1.7 |
-| `AUTH_SECRET` | Yes | Random string, 32+ characters, used to encrypt the session cookie. Generate with `openssl rand -base64 32` |
-| `GEMINI_API_KEY` | Recommended | From [aistudio.google.com](https://aistudio.google.com). Use a **paid-tier** key in production (see Privacy above). Without it, everything uses the rule-based engine and drafting is unavailable. |
-| `CONTACT_EMAIL` | Yes, to go public | Shown on the Privacy and Terms pages |
+| `GOOGLE_CLIENT_ID` | Yes | From step 1.6 |
+| `GOOGLE_CLIENT_SECRET` | Yes | From step 1.6 |
+| `GEMINI_API_KEY` | Recommended | Free key from [aistudio.google.com](https://aistudio.google.com) (see Privacy above). Without it, everything uses the rule-based engine and drafting is unavailable. |
+| `AUTH_SECRET` | No | Encrypts the session cookie. If unset, a key is derived from `GOOGLE_CLIENT_SECRET`. |
+| `CONTACT_EMAIL` | No | Shown on the Privacy and Terms pages. If unset, they link to this repo's GitHub issues. |
 
 ### 3. Run locally
 
@@ -108,20 +108,20 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Deployed on Vercel, auto-redeploying on every push to `main`. After setting the environment variables above, redeploy so they take effect. Make sure the deployed URL's `/api/auth/callback` is listed in the Google client's redirect URIs.
 
-## Going public (Google verification)
+## Public access, and its free-tier limits
 
-`gmail.readonly` is a Google **restricted scope**. Until the app is verified, only the test users you list (up to 100) can sign in, and they see a "Google hasn't verified this app" warning. To open it to everyone:
+`gmail.readonly` is a Google **restricted scope**. This project deliberately stays free, so it is **published but not verified** by Google:
 
-1. Use a domain you own (verified in [Google Search Console](https://search.google.com/search-console)) for the home page, privacy policy and redirect URI.
-2. Set `CONTACT_EMAIL`, use a paid-tier Gemini key, and re-read `/privacy` so it matches reality.
-3. Switch the app's audience from **Testing** to **In production**, then submit it for verification with a short demo video showing sign-in and how the Gmail data is used.
-4. Complete the **CASA security assessment** Google requires for restricted scopes. It is done by a Google-approved assessor, repeats yearly, and may have a fee.
+- Anyone with a Google account can sign in, after clicking past Google's "unverified app" warning.
+- Google caps unverified apps using restricted scopes at **100 users over the project's lifetime**, after which new sign-ins are blocked ([Google: Unverified apps](https://support.google.com/cloud/answer/7454865)).
+- Removing the warning and the cap requires Google's verification. That needs a domain you own, a paid-tier Gemini key (so the Privacy Policy can honestly say Google won't use the data), a demo video, and an annual third-party [security assessment](https://support.google.com/cloud/answer/13465431) (CASA), which costs money. None of that is done here.
 
 ## Limits
 
 - Reads at most 30 recent inbox emails (`INBOX_QUERY` / `MAX_EMAILS` in `lib/gmail.ts`).
 - Rate limits are in memory per serverless instance (3 triage runs and 5 drafts per minute per account). This is fine at small scale, but needs a shared store if traffic grows.
 - Sessions last about an hour; after that you sign in again.
+- Free-tier Gemini rate limits are low. When they're hit, the app automatically uses the rule-based engine instead.
 
 ## A note on the Gemini model
 

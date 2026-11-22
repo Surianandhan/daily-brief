@@ -26,17 +26,20 @@ export const cookieOptions = {
 };
 
 export function missingAuthConfig(): string[] {
-  return ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "AUTH_SECRET"].filter(
+  return ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"].filter(
     (name) => !process.env[name]
   );
 }
 
+// Cookie encryption key. Uses AUTH_SECRET if set; otherwise it's derived from
+// the Google client secret (already a server-only secret), so setup needs one
+// less variable. HKDF with a fixed label keeps the two uses separate.
 function key(): Buffer {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 32) {
-    throw new Error("AUTH_SECRET must be set to at least 32 characters");
-  }
-  return crypto.createHash("sha256").update(secret).digest();
+  const secret = process.env.AUTH_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+  if (!secret) throw new Error("GOOGLE_CLIENT_SECRET is not set");
+  return Buffer.from(
+    crypto.hkdfSync("sha256", secret, "daily-brief", "session-cookie-v1", 32)
+  );
 }
 
 // AES-256-GCM: the cookie can be neither read nor tampered with by the browser.
