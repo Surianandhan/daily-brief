@@ -14,10 +14,11 @@ function formatDeadline(deadline: string | null): string {
 export interface ThreadDetailProps {
   thread?: OutputThread;
   mode?: "ai" | "fallback";
+  account?: string;
   onClose?: () => void;
 }
 
-export default function ThreadDetail({ thread, mode, onClose }: ThreadDetailProps) {
+export default function ThreadDetail({ thread, mode, account, onClose }: ThreadDetailProps) {
   const [activeTab, setActiveTab] = useState<"detail" | "trace" | "reply">("reply");
 
   if (!thread) {
@@ -99,7 +100,7 @@ export default function ThreadDetail({ thread, mode, onClose }: ThreadDetailProp
 
         {/* Tab Content */}
         {activeTab === "reply" && (
-          <DraftResponse thread={thread} />
+          <DraftResponse thread={thread} account={account} />
         )}
 
         {activeTab === "detail" && (

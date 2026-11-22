@@ -1,5 +1,7 @@
 # How Daily Brief Works
 
+> **Note:** this walkthrough describes the **hackathon version** (up to commit [`68bc7a1`](https://github.com/surianandhan/daily-brief/tree/68bc7a1)), which ran on a mock inbox. The current app signs in with Google and reads your real Gmail. See [README.md](./README.md) for how it works now.
+
 A file-by-file walkthrough of the whole system, for anyone on the team (or judging it) who wants to understand what's actually happening, not just how to run it. Read `README.md` first for the pitch and setup steps — this doc is the "and here's exactly how" companion.
 
 **Live:** https://daily-brief-nine-ruddy.vercel.app

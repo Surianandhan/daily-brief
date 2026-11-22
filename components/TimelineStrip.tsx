@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
-import { Clock, AlertCircle, Calendar, CheckCircle2, Filter } from "lucide-react";
+import { Clock, Calendar, CheckCircle2, Filter } from "lucide-react";
+
+export type DeadlineHorizon = "today" | "this_week" | "flexible";
 
 export interface TimelineStripThread {
-  deadlineHorizon?: "overdue" | "today" | "this_week" | "flexible";
-  priority?: string;
+  deadlineHorizon: DeadlineHorizon;
 }
 
 export interface TimelineStripProps {
@@ -20,11 +21,10 @@ export function TimelineStrip({
   threads = [],
 }: TimelineStripProps) {
   const counts = {
-    all: threads.length || 6,
-    overdue: threads.filter((t) => t.deadlineHorizon === "overdue" || t.priority === "urgent" || t.priority === "high").length || 2,
-    today: threads.filter((t) => t.deadlineHorizon === "today").length || 2,
-    this_week: threads.filter((t) => t.deadlineHorizon === "this_week").length || 1,
-    flexible: threads.filter((t) => t.deadlineHorizon === "flexible" || t.priority === "low").length || 1,
+    all: threads.length,
+    today: threads.filter((t) => t.deadlineHorizon === "today").length,
+    this_week: threads.filter((t) => t.deadlineHorizon === "this_week").length,
+    flexible: threads.filter((t) => t.deadlineHorizon === "flexible").length,
   };
 
   const horizons = [
@@ -37,26 +37,17 @@ export function TimelineStrip({
       icon: Filter,
     },
     {
-      id: "overdue",
-      label: "Overdue",
-      count: counts.overdue,
+      id: "today",
+      label: "Due ≤ 24h",
+      count: counts.today,
       badgeColor: "bg-rose-100 text-rose-800 border-rose-200",
       color: "border-rose-200 bg-rose-50/40 text-rose-900 hover:bg-rose-50/80",
       activeColor: "border-rose-600 bg-rose-600 text-white shadow-xl shadow-rose-200 scale-[1.02]",
-      icon: AlertCircle,
-    },
-    {
-      id: "today",
-      label: "Due Today",
-      count: counts.today,
-      badgeColor: "bg-amber-100 text-amber-900 border-amber-200",
-      color: "border-amber-200 bg-amber-50/40 text-amber-900 hover:bg-amber-50/80",
-      activeColor: "border-amber-600 bg-amber-600 text-white shadow-xl shadow-amber-200 scale-[1.02]",
       icon: Clock,
     },
     {
       id: "this_week",
-      label: "This Week",
+      label: "Due This Week",
       count: counts.this_week,
       badgeColor: "bg-indigo-100 text-indigo-900 border-indigo-200",
       color: "border-indigo-200 bg-indigo-50/40 text-indigo-900 hover:bg-indigo-50/80",
@@ -65,7 +56,7 @@ export function TimelineStrip({
     },
     {
       id: "flexible",
-      label: "Low Urgency",
+      label: "No Deadline",
       count: counts.flexible,
       badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
       color: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
@@ -84,21 +75,17 @@ export function TimelineStrip({
           <h3 className="text-lg font-black text-slate-900 tracking-tight">Deadline Timeline Strip</h3>
         </div>
 
-        <span className="text-xs font-mono text-slate-400 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-200">
-          UTC+05:30
-        </span>
       </div>
 
       {/* Progress Horizon Beam Line */}
       <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex p-0.5">
-        <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${(counts.overdue / (counts.all || 1)) * 100}%` }}></div>
-        <div className="bg-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${(counts.today / (counts.all || 1)) * 100}%` }}></div>
+        <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${(counts.today / (counts.all || 1)) * 100}%` }}></div>
         <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${(counts.this_week / (counts.all || 1)) * 100}%` }}></div>
         <div className="bg-slate-300 h-full rounded-full transition-all duration-500" style={{ width: `${(counts.flexible / (counts.all || 1)) * 100}%` }}></div>
       </div>
 
       {/* Horizon Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {horizons.map((item) => {
           const Icon = item.icon;
           const isActive = activeFilter === item.id;
