@@ -4,7 +4,11 @@
 
 An AI email triage app. It ingests a mock inbox, clusters emails into threads, scores each thread's priority against an explicit rubric, extracts deadlines/action items, and renders a triaged "Daily Brief" (Urgent / This Week / FYI) — with an AI-drafted reply available per thread.
 
-Built in a 2-hour hackathon. No auth, no real Gmail integration, no database — everything runs in-memory off a mocked inbox JSON file.
+## Project history
+
+**Hackathon version: up to commit [`68bc7a1`](https://github.com/surianandhan/daily-brief/tree/68bc7a1) (5 Aug 2026).** Built in a 2-hour hackathon for the interview round at **Prodapt** (Chennai). Everything up to and including that commit was the hackathon submission: no auth, no real Gmail integration, no database. Everything runs in memory from a mock inbox JSON file.
+
+**After the hackathon.** Every change after that commit is my own personal work, done out of interest. None of it was part of the interview submission.
 
 For a detailed file-by-file walkthrough of the whole system (request lifecycle, every module's job, the resilience mechanics, known quirks), see **[HOW_IT_WORKS.md](./HOW_IT_WORKS.md)**.
 
