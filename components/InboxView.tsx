@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBrief } from "@/lib/BriefContext";
-import { NotSignedInError, fetchBrief } from "@/lib/fetchBrief";
+import { FriendlyError, NotSignedInError, fetchBrief } from "@/lib/fetchBrief";
 import ReasoningTrace from "@/components/ReasoningTrace";
 import type { InboxListItem } from "@/lib/types";
 
@@ -27,9 +27,12 @@ function displayName(from: string): string {
 export default function InboxView({
   emails,
   account,
+  notice,
 }: {
   emails: InboxListItem[];
   account: string;
+  // Shown instead of the inbox when Gmail couldn't be read right now.
+  notice?: string;
 }) {
   const router = useRouter();
   const { setData } = useBrief();
@@ -49,7 +52,11 @@ export default function InboxView({
         router.refresh();
         return;
       }
-      setError("Couldn't process your inbox. Please try again.");
+      setError(
+        err instanceof FriendlyError
+          ? err.message
+          : "Couldn't process your inbox. Please try again."
+      );
       setLoading(false);
     }
   };
@@ -67,7 +74,9 @@ export default function InboxView({
           </form>
         </div>
         <p className="text-zinc-500">
-          {emails.length === 0
+          {notice
+            ? notice
+            : emails.length === 0
             ? "No inbox emails from the last 7 days (Promotions and Social are skipped)."
             : `${emails.length} recent inbox emails. Let AI cluster, prioritise and summarise them.`}
         </p>

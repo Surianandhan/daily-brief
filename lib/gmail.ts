@@ -16,6 +16,13 @@ const MAX_BODY_CHARS = 1500;
 // The access token is expired, revoked, or lacks Gmail permission.
 export class GmailAuthError extends Error {}
 
+// Gmail's per-user quota (units per minute) is used up, e.g. after several
+// quick refreshes. It resets by itself within about a minute.
+export class GmailRateLimitError extends Error {}
+
+export const GMAIL_RATE_LIMIT_MESSAGE =
+  "Too many Gmail requests in the last minute. Wait a minute, then try again.";
+
 type GmailHeader = { name: string; value: string };
 type GmailPart = {
   mimeType?: string;
@@ -47,6 +54,9 @@ async function gmailGet<T>(
   const detail = await res.text();
   if (res.status === 401 || (res.status === 403 && /insufficient/i.test(detail))) {
     throw new GmailAuthError(`Gmail API ${res.status}`);
+  }
+  if (res.status === 429 || (res.status === 403 && /rate ?limit|quota exceeded/i.test(detail))) {
+    throw new GmailRateLimitError(`Gmail API ${res.status}: rate limited`);
   }
   // e.g. 403 "Gmail API has not been used in project ..." means it isn't enabled.
   throw new Error(`Gmail API ${res.status}: ${detail.slice(0, 300)}`);

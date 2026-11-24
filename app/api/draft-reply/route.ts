@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { callGeminiJSON } from "@/lib/gemini";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { SESSION_COOKIE, getSession } from "@/lib/auth";
-import { GmailAuthError, getThreadEmails } from "@/lib/gmail";
+import {
+  GMAIL_RATE_LIMIT_MESSAGE,
+  GmailAuthError,
+  GmailRateLimitError,
+  getThreadEmails,
+} from "@/lib/gmail";
 
 export const dynamic = "force-dynamic";
-// Gmail thread fetch + 1 Gemini call x 2 attempts x 20s timeout.
+// Gmail thread fetch + up to 3 Gemini models x 15s timeout.
 export const maxDuration = 60;
 
 type DraftReplyRequest = { threadId?: unknown; tone?: unknown };
@@ -67,6 +72,9 @@ export async function POST(request: NextRequest) {
       );
       response.cookies.delete(SESSION_COOKIE);
       return response;
+    }
+    if (err instanceof GmailRateLimitError) {
+      return NextResponse.json({ error: GMAIL_RATE_LIMIT_MESSAGE }, { status: 429 });
     }
     console.warn(
       "[draft-reply] Gmail read failed:",

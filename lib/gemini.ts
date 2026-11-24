@@ -1,9 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODEL_NAME = "gemini-3.1-flash-lite";
-// A real inbox (up to 30 emails) takes longer than the old 40-email mock did,
-// so allow 20s per attempt. 2 attempts = 40s, inside the routes' maxDuration.
-const CALL_TIMEOUT_MS = 20_000;
+// Tried in order. On the free tier a busy model answers 503 ("high demand"),
+// so if one fails we move on to the next instead of giving up. The "-latest"
+// aliases always point at Google's newest Flash-Lite / Flash release, so they
+// keep working as models are retired. Override with a comma-separated
+// GEMINI_MODELS env var without changing code.
+const MODELS = (
+  process.env.GEMINI_MODELS ||
+  "gemini-flash-lite-latest,gemini-3.1-flash-lite,gemini-flash-latest"
+)
+  .split(",")
+  .map((m) => m.trim())
+  .filter(Boolean);
+// 3 models x 15s + short pauses stays inside the routes' 60s maxDuration.
+const CALL_TIMEOUT_MS = 15_000;
+const PAUSE_BETWEEN_ATTEMPTS_MS = 1_000;
 
 let client: GoogleGenerativeAI | null = null;
 
@@ -26,9 +37,9 @@ function stripCodeFences(text: string): string {
   return fenceMatch ? fenceMatch[1] : trimmed;
 }
 
-async function callOnce(prompt: string): Promise<unknown> {
+async function callOnce(modelName: string, prompt: string): Promise<unknown> {
   const model = getClient().getGenerativeModel({
-    model: MODEL_NAME,
+    model: modelName,
     generationConfig: { responseMimeType: "application/json" },
   });
   const result = await model.generateContent(prompt, {
@@ -39,19 +50,22 @@ async function callOnce(prompt: string): Promise<unknown> {
 }
 
 /**
- * Calls Gemini with the given prompt, expecting a JSON response.
- * Retries once on timeout, network error, or JSON parse failure.
- * Optionally validates the parsed JSON against `validate`; a failed
- * validation is also retried once.
+ * Calls Gemini with the given prompt, expecting a JSON response that passes
+ * `validate`. On a timeout, overload, network error, bad JSON or failed
+ * validation it tries the next model in MODELS, and throws only when all
+ * of them have failed.
  */
 export async function callGeminiJSON<T>(
   prompt: string,
   validate: (value: unknown) => value is T
 ): Promise<T> {
   let lastError: unknown;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (const [index, modelName] of MODELS.entries()) {
+    if (index > 0) {
+      await new Promise((resolve) => setTimeout(resolve, PAUSE_BETWEEN_ATTEMPTS_MS));
+    }
     try {
-      const parsed = await callOnce(prompt);
+      const parsed = await callOnce(modelName, prompt);
       if (validate(parsed)) {
         return parsed;
       }
@@ -60,11 +74,9 @@ export async function callGeminiJSON<T>(
       lastError = err;
     }
     console.warn(
-      `[gemini] attempt ${attempt + 1}/2 failed:`,
+      `[gemini] ${modelName} (attempt ${index + 1}/${MODELS.length}) failed:`,
       lastError instanceof Error ? lastError.message : lastError
     );
   }
-  throw new Error("Gemini call failed validation or errored after retry", {
-    cause: lastError,
-  });
+  throw new Error("All Gemini models failed", { cause: lastError });
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBrief } from "@/lib/BriefContext";
-import { NotSignedInError, fetchBrief } from "@/lib/fetchBrief";
+import { FriendlyError, NotSignedInError, fetchBrief } from "@/lib/fetchBrief";
 import ThreadDetail from "@/components/ThreadDetail";
 import TimelineStrip, { type DeadlineHorizon } from "@/components/TimelineStrip";
 import PriorityBadge, { FallbackBadge } from "@/components/PriorityBadge";
@@ -42,7 +42,9 @@ export default function DailyBriefPage() {
           router.replace("/?error=expired");
           return;
         }
-        setError("Couldn't load your Daily Brief.");
+        setError(
+          err instanceof FriendlyError ? err.message : "Couldn't load your Daily Brief."
+        );
       })
       .finally(() => setLoading(false));
   }, [data, setData, router]);

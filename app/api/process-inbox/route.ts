@@ -3,7 +3,12 @@ import { callGeminiJSON } from "@/lib/gemini";
 import { processInbox } from "@/lib/fallbackEngine.js";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { SESSION_COOKIE, getSession } from "@/lib/auth";
-import { GmailAuthError, listInbox } from "@/lib/gmail";
+import {
+  GMAIL_RATE_LIMIT_MESSAGE,
+  GmailAuthError,
+  GmailRateLimitError,
+  listInbox,
+} from "@/lib/gmail";
 import type {
   Email,
   Bucket,
@@ -15,7 +20,7 @@ import type {
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
-// Gmail fetch (a few seconds) + 1 Gemini call x 2 attempts x 20s timeout.
+// Gmail fetch (a few seconds) + up to 3 Gemini models x 15s timeout.
 // Without this, the platform's default function timeout could kill the
 // request before our own try/catch gets to fall back to the rule engine.
 export const maxDuration = 60;
@@ -239,6 +244,9 @@ export async function GET(request: NextRequest) {
       );
       response.cookies.delete(SESSION_COOKIE);
       return response;
+    }
+    if (err instanceof GmailRateLimitError) {
+      return NextResponse.json({ error: GMAIL_RATE_LIMIT_MESSAGE }, { status: 429 });
     }
     console.error(
       "[process-inbox] Gmail read failed:",
