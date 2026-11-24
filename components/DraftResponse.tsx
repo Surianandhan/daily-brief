@@ -4,20 +4,19 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
-  Send,
   Copy,
   Check,
   RefreshCw,
   Wand2,
   Edit3,
-  ThumbsUp,
+  ExternalLink,
 } from "lucide-react";
-import confetti from "canvas-confetti";
 import type { OutputThread } from "@/lib/types";
 
 export interface DraftResponseProps {
   thread?: OutputThread;
-  onSendReply?: (replyText: string) => void;
+  // Signed-in Gmail address, so "open in Gmail" picks the right account.
+  account?: string;
 }
 
 const TONE_SUGGESTIONS = [
@@ -27,13 +26,12 @@ const TONE_SUGGESTIONS = [
   { id: "sug-4", label: "💬 Acknowledge Receipt", tone: "brief, professional-friendly acknowledgment" },
 ];
 
-export function DraftResponse({ thread, onSendReply }: DraftResponseProps) {
+export function DraftResponse({ thread, account }: DraftResponseProps) {
   const [draftText, setDraftText] = useState("");
   const [selectedSuggestion, setSelectedSuggestion] = useState(TONE_SUGGESTIONS[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [isSent, setIsSent] = useState(false);
 
   const fetchDraft = async (tone: string) => {
     if (!thread) return;
@@ -43,13 +41,12 @@ export function DraftResponse({ thread, onSendReply }: DraftResponseProps) {
       const res = await fetch("/api/draft-reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subject: thread.subject,
-          emails: [{ from: "thread", body: thread.summary || thread.subject }],
-          tone,
-        }),
+        body: JSON.stringify({ threadId: thread.threadId, tone }),
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error("Your Google session expired. Sign in again to draft replies.");
+        }
         if (res.status === 429) {
           const data: { error?: string } = await res.json().catch(() => ({}));
           throw new Error(data.error || "Too many requests. Please wait a moment.");
@@ -60,7 +57,7 @@ export function DraftResponse({ thread, onSendReply }: DraftResponseProps) {
       setDraftText(data.draft);
     } catch (err) {
       setError(
-        err instanceof Error && err.message.toLowerCase().includes("too many")
+        err instanceof Error && /too many|session expired/i.test(err.message)
           ? err.message
           : "Couldn't generate a draft reply. Try again."
       );
@@ -86,16 +83,19 @@ export function DraftResponse({ thread, onSendReply }: DraftResponseProps) {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const handleSend = () => {
-    setIsSent(true);
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.8 },
-      colors: ["#6366f1", "#10b981", "#f59e0b"],
-    });
-    if (onSendReply) onSendReply(draftText);
-    setTimeout(() => setIsSent(false), 3000);
+  // The app has read-only Gmail access and never sends mail itself: copy the
+  // draft and open the thread in Gmail so the user can paste, check and send.
+  const handleOpenInGmail = () => {
+    navigator.clipboard.writeText(draftText);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+    if (!thread) return;
+    const authuser = account ? `?authuser=${encodeURIComponent(account)}` : "";
+    window.open(
+      `https://mail.google.com/mail/${authuser}#all/${thread.threadId}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   return (
@@ -200,21 +200,12 @@ export function DraftResponse({ thread, onSendReply }: DraftResponseProps) {
           </button>
 
           <button
-            onClick={handleSend}
-            disabled={isSent}
+            onClick={handleOpenInGmail}
+            disabled={!draftText}
             className="px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider bg-slate-900 hover:bg-indigo-600 text-white shadow-xl transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            {isSent ? (
-              <>
-                <ThumbsUp className="h-4 w-4 text-emerald-400" />
-                <span>Response Sent!</span>
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                <span>Send Response</span>
-              </>
-            )}
+            <ExternalLink className="h-4 w-4" />
+            <span>Copy &amp; Open in Gmail</span>
           </button>
         </div>
       </div>

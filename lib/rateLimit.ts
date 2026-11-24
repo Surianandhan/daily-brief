@@ -1,5 +1,5 @@
-// Simple in-memory fixed-window rate limiter, keyed by client IP.
-// Good enough for a demo: resets on cold start, not shared across
+// Simple in-memory fixed-window rate limiter, keyed by signed-in Google account.
+// Good enough for now: resets on cold start, not shared across
 // concurrent serverless instances — but stops naive abuse/quota burn
 // without needing a database or external service.
 
@@ -10,8 +10,8 @@ const buckets = new Map<string, Bucket>();
 const DEFAULT_WINDOW_MS = 60_000;
 const DEFAULT_MAX_REQUESTS = 5;
 
-// `key` must be namespaced per endpoint (e.g. "draft-reply:1.2.3.4") —
-// a bare IP would let usage on one endpoint eat another endpoint's quota.
+// `key` must be namespaced per endpoint (e.g. "draft-reply:me@gmail.com") —
+// a bare account key would let one endpoint eat another endpoint's quota.
 export function checkRateLimit(
   key: string,
   options: { windowMs?: number; maxRequests?: number } = {}
@@ -38,10 +38,4 @@ export function checkRateLimit(
 
   bucket.count += 1;
   return { allowed: true };
-}
-
-export function getClientKey(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0].trim();
-  return request.headers.get("x-real-ip") || "unknown";
 }

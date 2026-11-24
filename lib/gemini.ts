@@ -1,7 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const MODEL_NAME = "gemini-3.1-flash-lite";
-const CALL_TIMEOUT_MS = 5000;
+// A real inbox (up to 30 emails) takes longer than the old 40-email mock did,
+// so allow 20s per attempt. 2 attempts = 40s, inside the routes' maxDuration.
+const CALL_TIMEOUT_MS = 20_000;
 
 let client: GoogleGenerativeAI | null = null;
 
@@ -25,7 +27,10 @@ function stripCodeFences(text: string): string {
 }
 
 async function callOnce(prompt: string): Promise<unknown> {
-  const model = getClient().getGenerativeModel({ model: MODEL_NAME });
+  const model = getClient().getGenerativeModel({
+    model: MODEL_NAME,
+    generationConfig: { responseMimeType: "application/json" },
+  });
   const result = await model.generateContent(prompt, {
     timeout: CALL_TIMEOUT_MS,
   });

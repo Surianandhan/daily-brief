@@ -29,61 +29,59 @@ export interface ReasoningTraceProps {
   steps?: TraceStep[];
 }
 
+// These describe what the app really does — no invented numbers, since the
+// animation plays while (or after) your real inbox is being processed.
 const DEFAULT_LLM_STEPS: TraceStep[] = [
   {
     id: "step-1",
-    label: "Reading unread inbox items...",
-    subLabel: "Ingested 38 emails via M365 & Google Workspace API",
+    label: "Reading your Gmail inbox...",
+    subLabel: "Read-only Gmail API · last 7 days · Promotions & Social skipped",
     durationMs: 700,
     logs: [
-      "[SYS] Connected to Microsoft Graph API endpoint v1.0",
-      "[SYS] Fetched 38 unread messages across 4 inbox folders",
-      "[PARSE] Sanitized HTML bodies and extracted raw text tokens"
+      "[GMAIL] Listing recent inbox messages (read-only access)",
+      "[PARSE] Converting HTML emails to plain text",
+      "[PARSE] Stripping quoted earlier replies and trimming long bodies"
     ]
   },
   {
     id: "step-2",
-    label: "Clustering into 9 context threads...",
-    subLabel: "Embedding similarity group size: ~4.2 msgs/thread",
-    durationMs: 950,
+    label: "Grouping into conversations...",
+    subLabel: "Uses Gmail's own thread IDs, so replies stay together",
+    durationMs: 600,
     logs: [
-      "[EMBED] Vectorizing message text using OpenAI text-embedding-3-small",
-      "[CLUSTER] HDBSCAN grouped 38 emails into 9 distinct semantic clusters",
-      "[LINK] Discovered 3 multi-party email chains regarding Q3 Budget Deficit"
+      "[THREAD] Grouping messages by Gmail threadId",
+      "[THREAD] Ordering each conversation oldest → newest"
     ]
   },
   {
     id: "step-3",
-    label: "Extracting temporal constraints...",
-    subLabel: "Identified 3 imminent deadlines & 2 scheduled calendar conflicts",
-    durationMs: 850,
+    label: "Scoring priority with Gemini...",
+    subLabel: "Sender (0–4) + deadline (0–4) + action needed (0–2)",
+    durationMs: 950,
     logs: [
-      "[NER] Extracted entities: 'Today 5 PM', 'EOD Friday', 'Immediate SLA'",
-      "[TIME] Normalized relative timestamps to local timezone (UTC+05:30)",
-      "[ALERT] Flagged 1 overdue security incident response SLA"
+      "[AI] Sending threads to Gemini with the scoring rubric",
+      "[AI] Email text is treated as data, never as instructions",
+      "[CHECK] Validating Gemini's JSON against the expected schema"
     ]
   },
   {
     id: "step-4",
-    label: "Scoring priority & impact...",
-    subLabel: "Weighted scoring: Sender VIP rank (40%) + Urgency (35%) + Impact (25%)",
-    durationMs: 900,
+    label: "Extracting deadlines & tasks...",
+    subLabel: "Only deadlines stated in the email — never invented",
+    durationMs: 850,
     logs: [
-      "[SCORE] Thread #101 (Server Outage) -> Score 98/100 (HIGH)",
-      "[SCORE] Thread #102 (Q3 Contract Review) -> Score 92/100 (HIGH)",
-      "[SCORE] Thread #104 (Vendor Invoice) -> Score 68/100 (MEDIUM)",
-      "[SCORE] Thread #107 (Weekly Newsletter) -> Score 18/100 (LOW)"
+      "[AI] Pulling out action items and stated deadlines",
+      "[TIME] Judging 'due today' in your own time zone"
     ]
   },
   {
     id: "step-5",
-    label: "Drafting autonomous responses & action matrix...",
-    subLabel: "Prepared 2 high-priority auto-replies & assigned triage badges",
-    durationMs: 700,
+    label: "Building your brief...",
+    subLabel: "Urgent 8–10 · This week 4–7 · FYI 0–3",
+    durationMs: 600,
     logs: [
-      "[GEN] Generated draft reply for CTO: 'Incident response engaged'",
-      "[MATRIX] Created 4 action items in Executive Action Queue",
-      "[DONE] Execution pipeline complete"
+      "[SORT] Bucketing threads by total score",
+      "[DONE] Brief kept in your browser only — nothing stored on the server"
     ]
   }
 ];
@@ -91,35 +89,33 @@ const DEFAULT_LLM_STEPS: TraceStep[] = [
 const DEFAULT_FALLBACK_STEPS: TraceStep[] = [
   {
     id: "step-fb-1",
-    label: "Initializing Rule-Based Engine (Fallback Mode)...",
-    subLabel: "Primary LLM API offline/throttled — active fallback mechanism",
+    label: "Switching to the rule-based engine...",
+    subLabel: "Gemini failed, timed out or hit the rate limit",
     durationMs: 500,
     logs: [
-      "[WARN] LLM API timeout detected (HTTP 504 / RateLimit)",
-      "[SYS] Activating local regex & domain heuristic parser v2.4",
-      "[RULE] Loaded 42 deterministic regex patterns"
+      "[WARN] AI unavailable — using the built-in backup engine",
+      "[SYS] Same rubric and same output shape, no AI involved"
     ]
   },
   {
     id: "step-fb-2",
-    label: "Parsing keyword & sender domain reputation...",
-    subLabel: "Scanning subject lines for 'URGENT', 'CRITICAL', 'OUTAGE', 'INVOICE'",
+    label: "Scoring senders & keywords...",
+    subLabel: "Starred/Important → 4 · real person → 2 · newsletters & promos → 0",
     durationMs: 600,
     logs: [
-      "[REGEX] Matched 'CRITICAL' in 2 email subject lines",
-      "[DOMAIN] Sender domain @enterprise.com matched VIP list (+30 pts)",
-      "[HEURISTIC] Flagged keywords: 'SLA Breach', 'Payment Due'"
+      "[LABELS] Reading Gmail's Starred / Important / category labels",
+      "[REGEX] Matching deadline phrases (today, EOD, by Friday, dates)",
+      "[REGEX] Matching action phrases (please, can you, confirm, ?)"
     ]
   },
   {
     id: "step-fb-3",
-    label: "Applying deterministic priority matrix...",
-    subLabel: "Rule fallback complete: 2 High, 4 Medium, 3 Low",
+    label: "Applying the priority rubric...",
+    subLabel: "Urgent 8–10 · This week 4–7 · FYI 0–3",
     durationMs: 450,
     logs: [
-      "[ASSIGN] Assigned priority bands based on threshold rules",
-      "[TAG] Applied badge: '⚡ Rule-based triage'",
-      "[DONE] Fallback pipeline executed in 1.55s"
+      "[ASSIGN] Bucketing threads by total score",
+      "[TAG] Applied badge: '⚡ Rule-based triage'"
     ]
   }
 ];
