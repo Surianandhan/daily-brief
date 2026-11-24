@@ -1,5 +1,10 @@
 import { getSession } from "@/lib/auth";
-import { GmailAuthError, listInbox } from "@/lib/gmail";
+import {
+  GMAIL_RATE_LIMIT_MESSAGE,
+  GmailAuthError,
+  GmailRateLimitError,
+  listInbox,
+} from "@/lib/gmail";
 import type { InboxListItem } from "@/lib/types";
 import SignIn from "@/components/SignIn";
 import InboxView from "@/components/InboxView";
@@ -27,6 +32,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     );
   } catch (err) {
     if (err instanceof GmailAuthError) return <SignIn error={ERRORS.expired} />;
+    if (err instanceof GmailRateLimitError) {
+      return (
+        <InboxView account={session.email} emails={[]} notice={GMAIL_RATE_LIMIT_MESSAGE} />
+      );
+    }
     console.error(
       "[home] Gmail read failed:",
       err instanceof Error ? err.message : err

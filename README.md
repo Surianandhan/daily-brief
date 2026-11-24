@@ -37,7 +37,7 @@ An AI email triage app for Gmail. Sign in with Google and it reads your recent i
 
 - **Next.js 16** (App Router) + **TypeScript** + **Tailwind CSS**
 - **Gmail REST API** via `fetch` with hand-rolled Google OAuth (PKCE + state, AES-256-GCM session cookie). No auth library or Google SDK needed.
-- **Gemini** (`gemini-3.1-flash-lite`) via `@google/generative-ai`
+- **Gemini** (`gemini-flash-lite-latest`, with fallbacks) via `@google/generative-ai`
 - `framer-motion` + `lucide-react` for the UI
 
 ## Project structure
@@ -91,6 +91,7 @@ Copy `.env.example` to `.env` for local use, and set the same values in Vercel (
 | `GOOGLE_CLIENT_ID` | Yes | From step 1.6 |
 | `GOOGLE_CLIENT_SECRET` | Yes | From step 1.6 |
 | `GEMINI_API_KEY` | Recommended | Free key from [aistudio.google.com](https://aistudio.google.com) (see Privacy above). Without it, everything uses the rule-based engine and drafting is unavailable. |
+| `GEMINI_MODELS` | No | Comma-separated Gemini models to try in order when one is busy. Default: `gemini-flash-lite-latest,gemini-3.1-flash-lite,gemini-flash-latest` |
 | `AUTH_SECRET` | No | Encrypts the session cookie. If unset, a key is derived from `GOOGLE_CLIENT_SECRET`. |
 | `CONTACT_EMAIL` | No | Shown on the Privacy and Terms pages. If unset, they link to this repo's GitHub issues. |
 
@@ -121,8 +122,9 @@ Deployed on Vercel, auto-redeploying on every push to `main`. After setting the 
 - Reads at most 30 recent inbox emails (`INBOX_QUERY` / `MAX_EMAILS` in `lib/gmail.ts`).
 - Rate limits are in memory per serverless instance (3 triage runs and 5 drafts per minute per account). This is fine at small scale, but needs a shared store if traffic grows.
 - Sessions last about an hour; after that you sign in again.
-- Free-tier Gemini rate limits are low. When they're hit, the app automatically uses the rule-based engine instead.
+- Free-tier Gemini rate limits are low and models are sometimes overloaded. The app tries each model in `GEMINI_MODELS` in turn, and if all fail it uses the rule-based engine.
+- Gmail limits each user's API usage per minute, and reading a full email is relatively expensive. Several quick refreshes can hit that limit. The app then says so, and it clears within about a minute.
 
 ## A note on the Gemini model
 
-The original spec targeted `gemini-2.5-flash-lite`, which is no longer available to new API keys. This build uses `gemini-3.1-flash-lite`. If your key doesn't have access to it, list what's available with `GET https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY` and update `MODEL_NAME` in `lib/gemini.ts`.
+The original spec targeted `gemini-2.5-flash-lite`, which is no longer available to new API keys. The app now tries `gemini-flash-lite-latest` (Google's alias for the newest Flash-Lite model), then `gemini-3.1-flash-lite`, then `gemini-flash-latest`, moving on whenever one is overloaded or fails. To change the list, set `GEMINI_MODELS`. To see which models your key can use, call `GET https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY`.
